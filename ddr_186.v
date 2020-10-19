@@ -186,7 +186,11 @@ module system
 		 
 		 inout [7:0]GPIO,
 		 output I2C_SCL,
-		 inout I2C_SDA
+		 inout I2C_SDA,
+		 output wire I2S_MCLK,
+		 output wire I2S_SCLK,
+		 output wire I2S_LRCLK,
+		 output wire I2S_SDIN
     );
 
 	initial SD_n_CS = 1'b1;
@@ -715,12 +719,17 @@ module system
 		.word(WORD),
 		.speaker(speaker_on & timer_spk),
 		.opl3left(opl3left),
-        .opl3right(opl3right),
-        .stb44100(stb44100),
+      .opl3right(opl3right),
+      .stb44100(stb44100),
 		.full(sq_full),	// when not full, write max 2x1152 16bit samples
 		.dss_full(dss_full),
 		.AUDIO_L(AUD_L),
-		.AUDIO_R(AUD_R)
+		.AUDIO_R(AUD_R),
+		.CLK_I2S(CLK_50MHZ),
+		.I2S_MCLK(I2S_MCLK),
+		.I2S_SCLK(I2S_SCLK),
+		.I2S_LRCLK(I2S_LRCLK),
+		.I2S_SDIN(I2S_SDIN)
 	);
 	 
 	DSP32 DSP32_inst

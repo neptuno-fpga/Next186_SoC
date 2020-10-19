@@ -52,6 +52,7 @@
 module soundwave(
 		input CLK,
 		input CLK44100x256,
+		input CLK_I2S,
 		input [15:0]data,
 		input we,
 		input word,
@@ -62,7 +63,11 @@ module soundwave(
 		output full,	// when not full, write max 2x1152 16bit samples
 		output dss_full,
 		output reg AUDIO_L,
-		output reg AUDIO_R
+		output reg AUDIO_R,
+		output wire I2S_MCLK,
+		output wire I2S_SCLK,
+		output wire I2S_LRCLK,
+		output wire I2S_SDIN
 	);
 
 	 reg [31:0]wdata;
@@ -133,4 +138,14 @@ module soundwave(
 	end
 
 
+  	audio_top audio_top  
+	(
+	  .clk_50MHz (CLK_I2S),
+	  .dac_MCLK  (I2S_MCLK),
+	  .dac_LRCK  (I2S_LRCLK),
+	  .dac_SCLK  (I2S_SCLK),
+	  .dac_SDIN  (I2S_SDIN),
+	  .L_data    (lclamp),
+	  .R_data    (rclamp)
+	); 
 endmodule

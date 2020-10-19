@@ -4,7 +4,7 @@ JedecChain;
 	DefaultMfr(6E);
 
 	P ActionCode(Cfg)
-		Device PartName(EP4CE55F23) Path("/home/nestor/Projects/fpga/NeptUNO/Next186_SoC/") File("Next186_SoC.sof") MfrSpec(OpMask(1));
+		Device PartName(EP4CE55F23) Path("/home/nestor/Projects/fpga/NeptUNO/repo/Next186_SoC/") File("Next186_SoC.sof") MfrSpec(OpMask(1));
 
 ChainEnd;
 

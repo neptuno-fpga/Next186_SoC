@@ -44,9 +44,15 @@ module Next186_SoC(
 
 	wire SDR_CLK;
 	wire [7:0]LEDS;
+	wire MCLK;
+	wire SCLK;
+	wire LRCLK;
+	wire SDIN;
 	assign DRAM_CKE = 1'b1;
 	assign SRAM_ADDR = 20'h00000;
-	assign SRAM_DQ = 16'hZZZZ;
+	assign SRAM_DQ[15:12] = 4'hZ;
+	assign SRAM_DQ[11:8] = {LRCLK, SDIN, SCLK, MCLK};
+	assign SRAM_DQ[7:0] = 8'hZZ;
 	assign SRAM_OE_N = 1'b1;
 	assign SRAM_WE_N = 1'b1;
 	assign SRAM_UB_N = 1'b1;
@@ -102,6 +108,10 @@ module Next186_SoC(
 		.GPIO(),
 		.I2C_SCL(),
 		.I2C_SDA(),
+		.I2S_LRCLK(LRCLK),
+		.I2S_SDIN(SDIN),
+		.I2S_SCLK(SCLK),
+		.I2S_MCLK(MCLK)
 	);
 
 	
