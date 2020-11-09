@@ -39,6 +39,7 @@ module Next186_SoC(
 	output SD_DI,
 	input RX_EXT,
 	output TX_EXT,
+	output MIDI_OUT,
 	output STM_RST
 );
 
@@ -111,7 +112,8 @@ module Next186_SoC(
 		.I2S_LRCLK(LRCLK),
 		.I2S_SDIN(SDIN),
 		.I2S_SCLK(SCLK),
-		.I2S_MCLK(MCLK)
+		.I2S_MCLK(MCLK),
+		.MIDI_OUT(MIDI_OUT)
 	);
 
 	

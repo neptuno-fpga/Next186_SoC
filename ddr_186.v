@@ -86,6 +86,8 @@
 0200h-020fh - joystick port (GPIO) - pullup
 		WORD/BYTE r/w: bits[15:8] = 0 for input, 1 for output, bits[7:0]=data
 
+330h-331h - MPU401 port (uart mode)
+
 0378 - sound port: 8bit=Covox & DSS compatible, 16bit = stereo L+R - fifo sampled at 44100Hz
 		 bit4 of port 03DA is 1 when the sound queue is full. If it is 0, the queue may accept up to 1152 stereo samples (L + R), so 2304 16bit writes.
 
@@ -190,7 +192,8 @@ module system
 		 output wire I2S_MCLK,
 		 output wire I2S_SCLK,
 		 output wire I2S_LRCLK,
-		 output wire I2S_SDIN
+		 output wire I2S_SDIN,
+		 output MIDI_OUT
     );
 
 	initial SD_n_CS = 1'b1;
@@ -247,6 +250,7 @@ module system
 	wire PIC_OE = PORT_ADDR[15:8] == 8'h00 && PORT_ADDR[6:0] == 7'b0100001;	// 21h, a1h
 	wire KB_OE = PORT_ADDR[15:4] == 12'h006 && {PORT_ADDR[3], PORT_ADDR[1:0]} == 3'b000; // 60h, 64h
 	wire JOYSTICK = PORT_ADDR[15:4] == 12'h020; // 0x200-0x20f
+	wire MPU401_OE = PORT_ADDR[15:1] == (16'h0330 >> 1); // 330h, 331h
 	wire PARALLEL_PORT = PORT_ADDR[15:0] == 16'h0378;
 	wire PARALLEL_PORT_CTL = PORT_ADDR[15:0] == 16'h0379;
 	wire CPU32_PORT = PORT_ADDR[15:1] == (16'h0002 >> 1); // port 1 for data and 3 for instructions
@@ -262,6 +266,7 @@ module system
 	wire [7:0]KB_DOUT;
 	wire [7:0]PIC_DOUT;
 	wire [7:0]COM1_DOUT;
+	wire [7:0]MPU401_DOUT;
 	wire HALT;
 	wire CLK14745600; // RS232 clk
  	wire CLK44100x256;
@@ -400,7 +405,6 @@ module system
 // NMI on IORQ
 	reg [15:0]NMIonIORQ_LO = 16'h0001;
 	reg [15:0]NMIonIORQ_HI = 16'h0000;
-
 	assign LED = {1'b0, !cpu32_halt, AUD_L, AUD_R, planarreq, |sys_cmd_ack, ~SD_n_CS, HALT};
 	assign frame_on = s_displ_on[16+vgatext[1]];
 	
@@ -426,6 +430,7 @@ module system
 							 ({8{PARALLEL_PORT_CTL}} & {1'bx, dss_full, 6'bxxxxxx}) |
 							 ({8{CPU32_PORT}} & cpu32_data[7:0]) | 
 							 ({8{COM1_PORT}} & COM1_DOUT) | 
+							 ({8{MPU401_OE}} & MPU401_DOUT) |
 							 ({8{OPL3_PORT}} & opl32_data) ;
 
 	dcm dcm_system 
@@ -771,7 +776,19 @@ module system
         .stb44100(stb44100),
         .reset(!rstcount[18])    
      );
-	
+
+	mpu401 midi(
+		.clk_cpu(clk_cpu),
+		.clk_sys(clk_25),
+		.reset(!rstcount[18]),
+		.cs(MPU401_OE && IORQ && CPU_CE),
+		.wr(WR),
+		.addr(PORT_ADDR[0]),
+		.din(CPU_DOUT[7:0]),
+		.dout(MPU401_DOUT),
+		.midi_out(MIDI_OUT)
+	);
+
 	i2c_master_byte i2cmb
 	(
 		.refclk(clk_25),	// 25Mhz=100Kbps...100Mhz=400Kbps

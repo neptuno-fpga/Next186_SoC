@@ -269,6 +269,9 @@ set_location_assignment PIN_R2 -to SRAM_UB_N
 set_location_assignment PIN_A10 -to SRAM_WE_N
 set_location_assignment PIN_Y21 -to STM_RST
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to RX_EXT
+set_location_assignment PIN_U22 -to MIDI_OUT
+set_global_assignment -name VHDL_FILE midi/simple_uart.vhd
+set_global_assignment -name VERILOG_FILE midi/mpu401.v
 set_global_assignment -name VHDL_FILE I2S/dac_if.vhd
 set_global_assignment -name VHDL_FILE I2S/audio_top.vhd
 set_global_assignment -name SDC_FILE Next186_SoC.sdc
