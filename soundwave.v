@@ -59,6 +59,8 @@ module soundwave(
 		input speaker,
 		input [15:0]opl3left,
 		input [15:0]opl3right,
+		input [15:0]midi_left,
+		input [15:0]midi_right,
 		output stb44100,
 		output full,	// when not full, write max 2x1152 16bit samples
 		output dss_full,
@@ -81,8 +83,10 @@ module soundwave(
 	 reg [8:0]clkdiv = 0;
 	 reg [15:0]r_opl3left = 0;
 	 reg [15:0]r_opl3right = 0;
-	 wire [16:0]lmix = {sample1[15], sample1[15:0]} + {r_opl3left[15], r_opl3left} + (speaker << `SPKVOL); // signed mixer left
-	 wire [16:0]rmix = {sample1[31], sample1[31:16]} + {r_opl3right[15], r_opl3right} + (speaker << `SPKVOL); // signed mixer right
+	 reg [15:0]r_midileft = 0;
+	 reg [15:0]r_midiright = 0;
+	 wire [16:0]lmix = {sample1[15], sample1[15:0]} + {r_opl3left[15], r_opl3left} + {r_midileft[15], r_midileft} + (speaker << `SPKVOL); // signed mixer left
+	 wire [16:0]rmix = {sample1[31], sample1[31:16]} + {r_opl3right[15], r_opl3right} + {r_midiright[15], r_midiright} + (speaker << `SPKVOL); // signed mixer right
 	 wire [15:0]lclamp = (~|lmix[16:15] | &lmix[16:15]) ? {!lmix[15], lmix[14:0]} : {16{!lmix[16]}}; // clamp to [-32768..32767] and add 32878
 	 wire [15:0]rclamp = (~|rmix[16:15] | &rmix[16:15]) ? {!rmix[15], rmix[14:0]} : {16{!rmix[16]}};
 	 wire lsign = lval[31:16] < lclamp;
@@ -111,7 +115,9 @@ module soundwave(
 		clkdiv[8:0] <= clkdiv[7:0] + 1'b1;
 		if(clkdiv[8]) begin
 	       r_opl3left <= opl3left;
-           r_opl3right <= opl3right;
+          r_opl3right <= opl3right;
+			 r_midileft <= midi_left;
+          r_midiright <= midi_right;
 		end
 		
 		lval <= lval - lval[31:7] + (lsign << 25);

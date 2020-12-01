@@ -193,7 +193,10 @@ module system
 		 output wire I2S_SCLK,
 		 output wire I2S_LRCLK,
 		 output wire I2S_SDIN,
-		 output MIDI_OUT
+		 output MIDI_OUT,
+		 input CLKBD,
+		 input WSBD,
+		 input DABD
     );
 
 	initial SD_n_CS = 1'b1;
@@ -402,6 +405,10 @@ module system
     wire [15:0]opl3right;
     wire stb44100;
 
+// MIDI interface
+    wire [15:0]midi_left;
+    wire [15:0]midi_right;
+	 
 // NMI on IORQ
 	reg [15:0]NMIonIORQ_LO = 16'h0001;
 	reg [15:0]NMIonIORQ_HI = 16'h0000;
@@ -728,6 +735,8 @@ module system
       .stb44100(stb44100),
 		.full(sq_full),	// when not full, write max 2x1152 16bit samples
 		.dss_full(dss_full),
+		.midi_left(midi_left),
+		.midi_right(midi_right),
 		.AUDIO_L(AUD_L),
 		.AUDIO_R(AUD_R),
 		.CLK_I2S(CLK_50MHZ),
@@ -789,6 +798,15 @@ module system
 		.midi_out(MIDI_OUT)
 	);
 
+	i2s_decoder i2s_midi (
+		.clk(clk_25),
+		.sck(CLKBD),
+		.ws(WSBD),
+		.sd(DABD),
+		.left_out(midi_left),
+		.right_out(midi_right)
+	);
+	
 	i2c_master_byte i2cmb
 	(
 		.refclk(clk_25),	// 25Mhz=100Kbps...100Mhz=400Kbps
